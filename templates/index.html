@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root{
+    --bg:#f3f5f9;
+    --surface:#ffffff;
+
+    --text:#111827;
+    --muted:#6b7280;
+
+    --border:#e5e7eb;
+
+    --primary:#7c3aed;
+    --primary-dark:#6d28d9;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+    }
+
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-logo-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--text);
+      border-radius: 50%;
+    }
+
+    .nav-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 32px;
+    }
+
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 300;
+      letter-spacing: -0.04em;
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* STATS ROW */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      color: var(--text);
+    }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* APP CARDS */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .app-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      text-decoration: none;
+      color: var(--text);
+      display: block;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .app-card:hover {
+      border-color: #c8c6be;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .app-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .app-name {
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    .app-repo {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .badge-CRITICAL { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical-border); }
+    .badge-HIGH     { background: var(--high-bg);     color: var(--high);     border: 1px solid var(--high-border); }
+    .badge-MEDIUM   { background: var(--medium-bg);   color: var(--medium);   border: 1px solid var(--medium-border); }
+    .badge-LOW      { background: var(--low-bg);       color: var(--low);      border: 1px solid var(--low-border); }
+    .badge-NONE     { background: var(--none-bg);     color: var(--none);     border: 1px solid var(--none-border); }
+
+    .app-card-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* HISTORY TABLE */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead tr {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 11px 16px;
+      text-align: left;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover { background: #fafaf8; }
+
+    .mono { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+    .empty {
+      text-align: center;
+      padding: 64px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .empty-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-dot"></div>
+    Dashboard
+  </a>
+  <span class="nav-meta">CI/CD Scanner</span>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>Security Overview</h1>
+    <p>All apps monitored by the CI/CD security pipeline</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total Apps</div>
+      <div class="stat-value">{{ latest | length }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Scans</div>
+      <div class="stat-value">{{ all_scans | length }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Critical</div>
+      <div class="stat-value" style="color: var(--critical);">
+        {{ latest | selectattr('risk_level', 'equalto', 'CRITICAL') | list | length }}
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">High</div>
+      <div class="stat-value" style="color: var(--high);">
+        {{ latest | selectattr('risk_level', 'equalto', 'HIGH') | list | length }}
+      </div>
+    </div>
+  </div>
+
+  <!-- APP CARDS -->
+  {% if latest %}
+  <p class="section-title">Apps</p>
+  <div class="cards">
+    {% for scan in latest %}
+    <a class="app-card" href="/app/{{ scan.app_name }}">
+      <div class="app-card-top">
+        <div>
+          <div class="app-name">{{ scan.app_name }}</div>
+          <div class="app-repo">{{ scan.repo }}</div>
+        </div>
+        <span class="badge badge-{{ scan.risk_level }}">{{ scan.risk_level }}</span>
+      </div>
+      <div class="app-card-meta">
+        <span>Last push: {{ scan.push_time }}</span>
+        <span>{{ scan.files_scanned }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- SCAN HISTORY TABLE -->
+  <p class="section-title">Scan History</p>
+  <div class="table-wrap">
+    {% if all_scans %}
+    <table>
+      <thead>
+        <tr>
+          <th>App</th>
+          <th>Repo</th>
+          <th>Risk</th>
+          <th>Files Scanned</th>
+          <th>Pushed At</th>
+          <th>Scanned At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for scan in all_scans %}
+        <tr>
+          <td><a href="/app/{{ scan.app_name }}" style="color: var(--text); font-weight: 500; text-decoration: none;">{{ scan.app_name }}</a></td>
+          <td class="mono">{{ scan.repo }}</td>
+          <td><span class="badge badge-{{ scan.risk_level }}">{{ scan.risk_level }}</span></td>
+          <td class="mono">{{ scan.files_scanned }}</td>
+          <td class="mono">{{ scan.push_time }}</td>
+          <td class="mono">{{ scan.scan_time }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">
+      <div class="empty-title">No scans yet</div>
+      Push code to a monitored repo to see results here.
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+</body>
+</html>

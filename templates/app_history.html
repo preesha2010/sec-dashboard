@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }} — History</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f3f5f9;
+      --surface: #ffffff;
+      --border: #e4e2db;
+      --text:#111827;
+      --muted:#6b7280
+      --critical: #922b21; --critical-bg: #fdf2f1; --critical-border: #f0c4c0;
+      --high: #935116;     --high-bg: #fef5ec;     --high-border: #f5cba7;
+      --medium: #7d6608;   --medium-bg: #fefde7;   --medium-border: #f7dc6f;
+      --low: #1a6b45;      --low-bg: #f0f9f4;      --low-border: #b8ddc8;
+      --none: #5d6d7e;     --none-bg: #f4f6f7;     --none-border: #d5d8dc;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+    }
+
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    nav a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    nav a:hover { color: var(--text); }
+
+    .sep { color: var(--border); }
+
+    .nav-current {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 48px 32px;
+    }
+
+    .page-header { margin-bottom: 32px; }
+
+    .page-header h1 {
+      font-size: 24px;
+      font-weight: 300;
+      letter-spacing: -0.04em;
+      margin-bottom: 4px;
+    }
+
+    .page-header p { font-size: 13px; color: var(--muted); }
+
+    .scan-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .scan-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .scan-header:hover { background: #fafaf8; }
+
+    .scan-header-left { display: flex; align-items: center; gap: 12px; }
+
+    .scan-time {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .scan-files {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-CRITICAL { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical-border); }
+    .badge-HIGH     { background: var(--high-bg);     color: var(--high);     border: 1px solid var(--high-border); }
+    .badge-MEDIUM   { background: var(--medium-bg);   color: var(--medium);   border: 1px solid var(--medium-border); }
+    .badge-LOW      { background: var(--low-bg);       color: var(--low);      border: 1px solid var(--low-border); }
+    .badge-NONE     { background: var(--none-bg);     color: var(--none);     border: 1px solid var(--none-border); }
+
+    .scan-body {
+      border-top: 1px solid var(--border);
+      padding: 20px;
+      display: none;
+    }
+
+    .scan-body.open { display: block; }
+
+    .report-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text);
+      white-space: pre-wrap;
+      background: var(--bg);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .chevron {
+      font-size: 11px;
+      color: var(--muted);
+      transition: transform 0.2s;
+    }
+
+    .chevron.open { transform: rotate(180deg); }
+
+    .empty {
+      text-align: center;
+      padding: 64px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/">Dashboard</a>
+  <span class="sep">/</span>
+  <span class="nav-current">{{ app_name }}</span>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1>{{ app_name }}</h1>
+    <p>{{ scans | length }} scan{{ 's' if scans | length != 1 }} on record</p>
+  </div>
+
+  {% if scans %}
+    {% for scan in scans %}
+    <div class="scan-item">
+      <div class="scan-header" data-index="{{ loop.index }}">
+        <div class="scan-header-left">
+          <span class="badge badge-{{ scan.risk_level }}">{{ scan.risk_level }}</span>
+          <span class="scan-time">Pushed {{ scan.pushed_at }}</span>
+          <span class="scan-files">{{ scan.files_scanned }}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <span class="scan-time">Scanned {{ scan.scanned_at }}</span>
+          <span class="chevron" id="chevron-{{ loop.index }}">▼</span>
+        </div>
+      </div>
+      <div class="scan-body" id="body-{{ loop.index }}">
+        <div class="report-text">{{ scan.report }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty">No scans found for this app.</div>
+  {% endif %}
+
+</div>
+
+<script>
+  document.querySelectorAll(".scan-header").forEach(function(header) {
+    header.addEventListener("click", function() {
+      var id = this.getAttribute("data-index");
+      var body = document.getElementById("body-" + id);
+      var chevron = document.getElementById("chevron-" + id);
+      body.classList.toggle("open");
+      chevron.classList.toggle("open");
+    });
+  });
+</script>
+
+</body>
+</html>
