@@ -32,7 +32,7 @@ def save_scan(app_name, repo, push_time, risk_level, files_scanned, report):
         INSERT INTO scans (app_name, repo, push_time, scan_time, risk_level, files_scanned, report)
         VALUES (?,?, ?, ?, ?, ?, ?)
     """, (
-        app_name, repo, push_time, datetime.strftime("%Y-%m-%d %H:%M:%S"), risk_level, files_scanned, report
+        app_name, repo, push_time, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), risk_level, files_scanned, report
     ))
     conn.commit()
     conn.close()
