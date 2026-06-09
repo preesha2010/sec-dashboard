@@ -1,7 +1,9 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 DATABASE = "dashboard.db"
+
+IST = timezone(timedelta(hours=5, minutes=30))
 
 def get_db():   # open a new database connection
     conn =  sqlite3.connect(DATABASE)
@@ -32,7 +34,7 @@ def save_scan(app_name, repo, push_time, risk_level, files_scanned, report):
         INSERT INTO scans (app_name, repo, push_time, scan_time, risk_level, files_scanned, report)
         VALUES (?,?, ?, ?, ?, ?, ?)
     """, (
-        app_name, repo, push_time, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), risk_level, files_scanned, report
+        app_name, repo, push_time, datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"), risk_level, files_scanned, report
     ))
     conn.commit()
     conn.close()
