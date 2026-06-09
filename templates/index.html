@@ -250,13 +250,13 @@
     <div class="stat-card">
       <div class="stat-label">Critical</div>
       <div class="stat-value" style="color: var(--critical);">
-        {{ last | selectattr('risk_level', 'equalto', 'CRITICAL') | list | length }}
+        {{ all_scans | selectattr('risk_level', 'equalto', 'CRITICAL') | list | length }}
       </div>
     </div>
     <div class="stat-card">
       <div class="stat-label">High</div>
       <div class="stat-value" style="color: var(--high);">
-        {{ last | selectattr('risk_level', 'equalto', 'HIGH') | list | length }}
+        {{ all_scans | selectattr('risk_level', 'equalto', 'HIGH') | list | length }}
       </div>
     </div>
   </div>
