@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 from database import init_db, get_db, save_scan, get_scans, get_last_scan
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
@@ -9,7 +10,7 @@ init_db()   # initialize the database when the app starts
 #   API endpoint - what scan.py calls after a scan is done
 @app.route("/api/report", methods=["POST"])  # submitting scan report
 def api_report():
-    data = request.json
+    data = request.json # parse payload into python dict
     # validate report data fields
     required_fields = ["app_name", "repo", "push_time", "risk_level", "files_scanned", "report"]
     for f in required_fields:
@@ -34,4 +35,5 @@ def app_history(app_name):
     return render_template("app_history.html", app_scans=app_scans)
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5001, debug=True)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host="0.0.0.0", port=port, debug=False)

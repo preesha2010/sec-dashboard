@@ -320,7 +320,7 @@
   <!-- SCAN HISTORY TABLE -->
   <p class="section-title">Scan History</p>
   <div class="table-wrap">
-    {% if all_scans %}
+    {% if last %}
     <table>
       <thead>
         <tr>
@@ -328,8 +328,8 @@
           <th>Repo</th>
           <th>Risk</th>
           <th>Files Scanned</th>
-          <th>Pushed At</th>
-          <th>Scanned At</th>
+          <th>Last Pushed Time</th>
+          <th>Last Scan Time</th>
         </tr>
       </thead>
       <tbody>
