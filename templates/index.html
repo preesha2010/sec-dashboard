@@ -275,7 +275,7 @@
   <div class="stats">
     <div class="stat-card">
       <div class="stat-label">Total Apps</div>
-      <div class="stat-value">{{ latest | length }}</div>
+      <div class="stat-value">{{ last | length }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Total Scans</div>
@@ -284,22 +284,22 @@
     <div class="stat-card">
       <div class="stat-label">Critical</div>
       <div class="stat-value" style="color: var(--critical);">
-        {{ latest | selectattr('risk_level', 'equalto', 'CRITICAL') | list | length }}
+        {{ last | selectattr('risk_level', 'equalto', 'CRITICAL') | list | length }}
       </div>
     </div>
     <div class="stat-card">
       <div class="stat-label">High</div>
       <div class="stat-value" style="color: var(--high);">
-        {{ latest | selectattr('risk_level', 'equalto', 'HIGH') | list | length }}
+        {{ last | selectattr('risk_level', 'equalto', 'HIGH') | list | length }}
       </div>
     </div>
   </div>
 
   <!-- APP CARDS -->
-  {% if latest %}
+  {% if last %}
   <p class="section-title">Apps</p>
   <div class="cards">
-    {% for scan in latest %}
+    {% for scan in last %}
     <a class="app-card" href="/app/{{ scan.app_name }}">
       <div class="app-card-top">
         <div>

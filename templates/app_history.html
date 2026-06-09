@@ -175,11 +175,11 @@
       <div class="scan-header" data-index="{{ loop.index }}">
         <div class="scan-header-left">
           <span class="badge badge-{{ scan.risk_level }}">{{ scan.risk_level }}</span>
-          <span class="scan-time">Pushed {{ scan.pushed_at }}</span>
+          <span class="scan-time">Pushed {{ scan.push_time }}</span>
           <span class="scan-files">{{ scan.files_scanned }}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 16px;">
-          <span class="scan-time">Scanned {{ scan.scanned_at }}</span>
+          <span class="scan-time">Scanned {{ scan.scan_time }}</span>
           <span class="chevron" id="chevron-{{ loop.index }}">▼</span>
         </div>
       </div>
