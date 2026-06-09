@@ -32,7 +32,7 @@ def dashboard():
 def app_history(app_name):
     all_scans = get_scans()
     app_scans = [s for s in all_scans if s["app_name"]==app_name]
-    return render_template("app_history.html", app_scans=app_scans)
+    return render_template("app_history.html", app_name=app_name, scans=app_scans)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
