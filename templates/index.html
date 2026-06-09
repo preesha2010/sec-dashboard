@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -42,12 +42,11 @@
     }
 
     .nav-logo {
-      font-family: 'Lato', serif;
+      font-family: 'Lora', serif;
       font-size: 17px;
       font-weight: 400;
       color: var(--text);
       text-decoration: none;
-      letter-spacing: 0;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -78,7 +77,7 @@
     }
 
     .page-header h1 {
-      font-family: 'Lato', serif;
+      font-family: 'Lora', serif;
       font-size: 32px;
       font-weight: 400;
       letter-spacing: -0.01em;
@@ -117,7 +116,7 @@
     }
 
     .stat-value {
-      font-family: 'Lato', serif;
+      font-family: 'Lora', serif;
       font-size: 32px;
       font-weight: 400;
       letter-spacing: -0.02em;
@@ -135,77 +134,7 @@
       margin-bottom: 16px;
     }
 
-    /* APP CARDS */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 12px;
-      margin-bottom: 48px;
-    }
-
-    .app-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 20px 24px;
-      text-decoration: none;
-      color: var(--text);
-      display: block;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .app-card:hover {
-      border-color: #c8c6be;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .app-card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 16px;
-    }
-
-    .app-name {
-      font-family: 'Lato', serif;
-      font-size: 16px;
-      font-weight: 400;
-      letter-spacing: 0;
-      color: var(--text);
-    }
-
-    .app-repo {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    .badge {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 20px;
-      letter-spacing: 0.04em;
-      flex-shrink: 0;
-    }
-
-    .badge-CRITICAL { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical-border); }
-    .badge-HIGH     { background: var(--high-bg);     color: var(--high);     border: 1px solid var(--high-border); }
-    .badge-MEDIUM   { background: var(--medium-bg);   color: var(--medium);   border: 1px solid var(--medium-border); }
-    .badge-LOW      { background: var(--low-bg);      color: var(--low);      border: 1px solid var(--low-border); }
-    .badge-NONE     { background: var(--none-bg);     color: var(--none);     border: 1px solid var(--none-border); }
-
-    .app-card-meta {
-      display: flex;
-      justify-content: space-between;
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    /* HISTORY TABLE */
+    /* TABLE */
     .table-wrap {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -225,7 +154,7 @@
     }
 
     th {
-      padding: 11px 16px;
+      padding: 12px 16px;
       text-align: left;
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -236,17 +165,44 @@
     }
 
     td {
-      padding: 12px 16px;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--border);
       color: var(--text);
       vertical-align: middle;
     }
 
     tr:last-child td { border-bottom: none; }
-
     tbody tr:hover { background: #fafaf8; }
 
-    .mono { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+    .app-name-cell {
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .app-name-cell:hover { text-decoration: underline; }
+
+    .mono {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .badge-CRITICAL { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical-border); }
+    .badge-HIGH     { background: var(--high-bg);     color: var(--high);     border: 1px solid var(--high-border); }
+    .badge-MEDIUM   { background: var(--medium-bg);   color: var(--medium);   border: 1px solid var(--medium-border); }
+    .badge-LOW      { background: var(--low-bg);      color: var(--low);      border: 1px solid var(--low-border); }
+    .badge-NONE     { background: var(--none-bg);     color: var(--none);     border: 1px solid var(--none-border); }
 
     .empty {
       text-align: center;
@@ -256,7 +212,7 @@
     }
 
     .empty-title {
-      font-family: 'Lato', serif;
+      font-family: 'Lora', serif;
       font-size: 20px;
       font-weight: 400;
       color: var(--text);
@@ -305,30 +261,8 @@
     </div>
   </div>
 
-  <!-- APP CARDS -->
-  {% if last %}
+  <!-- APPS TABLE -->
   <p class="section-title">Apps</p>
-  <div class="cards">
-    {% for scan in last %}
-    <a class="app-card" href="/app/{{ scan.app_name }}">
-      <div class="app-card-top">
-        <div>
-          <div class="app-name">{{ scan.app_name }}</div>
-          <div class="app-repo">{{ scan.repo }}</div>
-        </div>
-        <span class="badge badge-{{ scan.risk_level }}">{{ scan.risk_level }}</span>
-      </div>
-      <div class="app-card-meta">
-        <span>Last push: {{ scan.push_time }}</span>
-        <span>{{ scan.files_scanned }}</span>
-      </div>
-    </a>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  <!-- SCAN HISTORY TABLE -->
-  <p class="section-title">Scan History</p>
   <div class="table-wrap">
     {% if last %}
     <table>
@@ -336,21 +270,21 @@
         <tr>
           <th>App</th>
           <th>Repo</th>
-          <th>Risk</th>
-          <th>Files Scanned</th>
-          <th>Last Pushed Time</th>
+          <th>Last Push Time</th>
           <th>Last Scan Time</th>
+          <th>Risk</th>
         </tr>
       </thead>
       <tbody>
-        {% for scan in all_scans %}
+        {% for scan in last %}
         <tr>
-          <td><a href="/app/{{ scan.app_name }}" style="color: var(--text); font-weight: 500; text-decoration: none;">{{ scan.app_name }}</a></td>
+          <td>
+            <a class="app-name-cell" href="/app/{{ scan.app_name }}">{{ scan.app_name }}</a>
+          </td>
           <td class="mono">{{ scan.repo }}</td>
-          <td><span class="badge badge-{{ scan.risk_level }}">{{ scan.risk_level }}</span></td>
-          <td class="mono">{{ scan.files_scanned }}</td>
           <td class="mono">{{ scan.push_time }}</td>
           <td class="mono">{{ scan.scan_time }}</td>
+          <td><span class="badge badge-{{ scan.risk_level }}">{{ scan.risk_level }}</span></td>
         </tr>
         {% endfor %}
       </tbody>
