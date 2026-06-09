@@ -7,6 +7,14 @@ app = Flask(__name__)
 
 init_db()   # initialize the database when the app starts
 
+@app.route("/clear-db")
+def clear_db():
+    conn = get_db()
+    conn.execute("DELETE FROM scans")
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Database cleared."})
+    
 #   API endpoint - what scan.py calls after a scan is done
 @app.route("/api/report", methods=["POST"])  # submitting scan report
 def api_report():
