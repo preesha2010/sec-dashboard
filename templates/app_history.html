@@ -120,6 +120,26 @@
     .badge-LOW      { background: var(--low-bg);       color: var(--low);      border: 1px solid var(--low-border); }
     .badge-NONE     { background: var(--none-bg);     color: var(--none);     border: 1px solid var(--none-border); }
 
+    .download-btn {
+      text-decoration: none;
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+
+      padding: 5px 10px;
+
+      border: 1px solid var(--border);
+      border-radius: 6px;
+
+      color: var(--text);
+      background: var(--surface);
+
+      transition: 0.2s;
+    }
+
+    .download-btn:hover {
+      background: #fafaf8;
+    }
+    
     .scan-body {
       border-top: 1px solid var(--border);
       padding: 20px;
@@ -179,10 +199,20 @@
           <span class="scan-time">Pushed {{ scan.push_time }}</span>
           <span class="scan-files">{{ scan.files_scanned }}</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <span class="scan-time">Scanned {{ scan.scan_time }}</span>
-          <span class="chevron" id="chevron-{{ loop.index }}">▼</span>
-        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="/download/{{ scan.id }}"
+            class="download-btn">
+            Download
+          </a>
+
+          <span class="scan-time">
+            Scanned {{ scan.scan_time }}
+          </span>
+
+          <span class="chevron" id="chevron-{{ loop.index }}">
+            ▼
+          </span>
+        </div> 
       </div>
       <div class="scan-body" id="body-{{ loop.index }}">
         <div class="report-text">{{ scan.report }}</div>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, Response
 from database import init_db, get_db, save_scan, get_scans, get_last_scan
 from datetime import datetime
 import os
@@ -33,6 +33,31 @@ def app_history(app_name):
     all_scans = get_scans()
     app_scans = [s for s in all_scans if s["app_name"]==app_name]
     return render_template("app_history.html", app_name=app_name, scans=app_scans)
+
+@app.route("/download/<int:scan_id>")
+def download_report(scan_id):
+    conn = get_db()
+    scan = conn.execute(
+        """
+        SELECT report, app_name
+        FROM scans
+        WHERE id = ?
+        """, (scan_id,)
+    ).fetchone()
+
+    conn.close()
+
+    if not scan:
+        return "Report not found", 404
+    
+    return Response(
+        scan["report"],
+        mimetype="text/markdown",
+        headers={
+            "Content-Disposition":
+            f"attachment; filename={scan['app_name']}_report_{scan_id}.md"
+        }
+    )
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
