@@ -199,20 +199,14 @@
           <span class="scan-time">Pushed {{ scan.push_time }}</span>
           <span class="scan-files">{{ scan.files_scanned }}</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <a href="/download/{{ scan.id }}"
-            class="download-btn">
-            Download
-          </a>
-
-          <span class="scan-time">
-            Scanned {{ scan.scan_time }}
-          </span>
-
-          <span class="chevron" id="chevron-{{ loop.index }}">
-            ▼
-          </span>
-        </div> 
+        <div style="display: flex; align-items: center; gap: 16px;">
+        <span class="scan-time">Scanned {{ scan.scan_time }}</span>
+        <a href="/app/{{ app_name }}/download/{{ scan.id }}" 
+          style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-decoration: none; border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; background: var(--bg);">
+          download
+        </a>
+        <span class="chevron" id="chevron-{{ loop.index }}">▼</span>
+      </div>
       </div>
       <div class="scan-body" id="body-{{ loop.index }}">
         <div class="report-text">{{ scan.report }}</div>

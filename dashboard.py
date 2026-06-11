@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request, Response
 from database import init_db, get_db, save_scan, get_scans, get_last_scan
 from datetime import datetime
+import psycopg2
 import os
 
 app = Flask(__name__)
@@ -34,29 +35,30 @@ def app_history(app_name):
     app_scans = [s for s in all_scans if s["app_name"]==app_name]
     return render_template("app_history.html", app_name=app_name, scans=app_scans)
 
-@app.route("/download/<int:scan_id>")
-def download_report(scan_id):
+@app.route("/app/<app_name>/download/<int:scan_id>")
+def download_report(app_name, scan_id):
     conn = get_db()
-    scan = conn.execute(
-        """
-        SELECT report, app_name
-        FROM scans
-        WHERE id = ?
-        """, (scan_id,)
-    ).fetchone()
-
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT * FROM scans WHERE id = %s AND app_name = %s", (scan_id, app_name))
+    scan = cur.fetchone()
+    cur.close()
     conn.close()
 
     if not scan:
-        return "Report not found", 404
-    
+        return jsonify({"error": "Scan not found"}), 404
+
+    content = f"# Security Report — {app_name}\n\n"
+    content += f"**Push Time:** {scan['push_time']}\n"
+    content += f"**Scan Time:** {scan['scan_time']}\n"
+    content += f"**Files Scanned:** {scan['files_scanned']}\n"
+    content += f"**Risk Level:** {scan['risk_level']}\n\n"
+    content += "---\n\n"
+    content += scan['report']
+
     return Response(
-        scan["report"],
+        content,
         mimetype="text/markdown",
-        headers={
-            "Content-Disposition":
-            f"attachment; filename={scan['app_name']}_report_{scan_id}.md"
-        }
+        headers={"Content-Disposition": f"attachment; filename={app_name}-security-report.md"}
     )
 
 if __name__ == "__main__":
