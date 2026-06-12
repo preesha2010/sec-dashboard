@@ -237,10 +237,7 @@
       </div>
       </div>
       <div class="scan-body" id="body-{{ loop.index }}">
-        <div class="report-text markdown-body" id="report-{{ loop.index }}"></div>
-        <script>
-         document.getElementById("report-{{ loop.index }}").innerHTML = marked.parse({{ scan.report | tojson }});
-        </script>
+        <div class="report-text markdown-body" id="report-{{ loop.index }}" data-report="{{ scan.report | tojson | forceescape }}"></div>
       </div>
     </div>
     {% endfor %}
@@ -259,6 +256,14 @@
       body.classList.toggle("open");
       chevron.classList.toggle("open");
     });
+  });
+</script>
+
+<script>
+  document.querySelectorAll(".markdown-body").forEach(function(el) {
+    var raw = el.getAttribute("data-report");
+    var text = JSON.parse(raw);
+    el.innerHTML = marked.parse(text);
   });
 </script>
 
