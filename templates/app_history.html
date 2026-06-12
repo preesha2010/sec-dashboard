@@ -120,7 +120,7 @@
     .badge-MEDIUM   { background: var(--medium-bg);   color: var(--medium);   border: 1px solid var(--medium-border); }
     .badge-LOW      { background: var(--low-bg);       color: var(--low);      border: 1px solid var(--low-border); }
     .badge-NONE     { background: var(--none-bg);     color: var(--none);     border: 1px solid var(--none-border); }
-
+  
     .download-btn {
       text-decoration: none;
       font-size: 11px;
@@ -224,6 +224,7 @@
       <div class="scan-header" data-index="{{ loop.index }}">
         <div class="scan-header-left">
           <span class="badge badge-{{ scan.risk_level }}">{{ scan.risk_level }}</span>
+          <span class="scan-time">Branch: {{ scan.branch }}</span>
           <span class="scan-time">Pushed {{ scan.push_time }}</span>
           <span class="scan-files">{{ scan.files_scanned }}</span>
         </div>
