@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
   <title>{{ app_name }} — History</title>
   <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
   <style>
@@ -160,6 +161,33 @@
       border: 1px solid var(--border);
     }
 
+    .markdown-body table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+    }
+
+    .markdown-body th, .markdown-body td {
+        border: 1px solid var(--border);
+        padding: 8px 12px;
+        text-align: left;
+    }
+
+    .markdown-body th {
+        background: var(--bg);
+        font-family: 'DM Mono', monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .markdown-body p {
+        margin-bottom: 12px;
+        line-height: 1.6;
+    }
+
     .chevron {
       font-size: 11px;
       color: var(--muted);
@@ -209,7 +237,10 @@
       </div>
       </div>
       <div class="scan-body" id="body-{{ loop.index }}">
-        <div class="report-text">{{ scan.report }}</div>
+        <div class="report-text markdown-body" id="report-{{ loop.index }}"></div>
+        <script>
+         document.getElementById("report-{{ loop.index }}").innerHTML = marked.parse({{ scan.report | tojson }});
+        </script>
       </div>
     </div>
     {% endfor %}
