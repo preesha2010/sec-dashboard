@@ -13,12 +13,13 @@ init_db()   # initialize the database when the app starts
 def api_report():
     data = request.json # parse payload into python dict
     # validate report data fields
-    required_fields = ["app_name", "repo", "branch", "push_time", "risk_level", "files_scanned", "report"]
+    required_fields = ["app_name", "repo", "push_time", "risk_level", "files_scanned", "report"]
     for f in required_fields:
         if f not in data:
             return jsonify({"error": f"Missing field: {f}"}), 400
     # save the scan report to the database   
-    save_scan(data["app_name"], data["repo"], data["branch"], data["push_time"], data["risk_level"], data["files_scanned"], data["report"])
+    save_scan(data["app_name"], data["repo"], 
+    data["push_time"], data["risk_level"], data["files_scanned"], data["report"])
     return jsonify({"message": "Scan report saved successfully."}), 201
 
 # Dashboard page

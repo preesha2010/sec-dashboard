@@ -19,7 +19,6 @@ def init_db():
             id SERIAL PRIMARY KEY,
             app_name TEXT NOT NULL,
             repo TEXT NOT NULL,
-            branch TEXT NOT NULL,
             push_time TEXT NOT NULL,
             scan_time TEXT NOT NULL,
             risk_level TEXT NOT NULL,
@@ -32,14 +31,14 @@ def init_db():
     conn.close()
     print("Database initialized.")
 
-def save_scan(app_name, repo, branch, push_time, risk_level, files_scanned, report):
+def save_scan(app_name, repo, push_time, risk_level, files_scanned, report):
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO scans (app_name, repo, branch, push_time, scan_time, risk_level, files_scanned, report)
+        INSERT INTO scans (app_name, repo, push_time, scan_time, risk_level, files_scanned, report)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     """, (
-        app_name, repo, branch, push_time, datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"), risk_level, files_scanned, report
+        app_name, repo, push_time, datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"), risk_level, files_scanned, report
     ))
     conn.commit()
     cur.close()
