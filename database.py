@@ -36,7 +36,7 @@ def save_scan(app_name, repo, push_time, risk_level, files_scanned, report):
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO scans (app_name, repo, push_time, scan_time, risk_level, files_scanned, report)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """, (
         app_name, repo, push_time, datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"), risk_level, files_scanned, report
     ))
