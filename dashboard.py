@@ -62,17 +62,6 @@ def download_report(app_name, scan_id):
         headers={"Content-Disposition": f"attachment; filename={app_name}-security-report.md"}
     )
 
-@app.route("/reset-table")
-def reset_table():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("DROP TABLE IF EXISTS scans")
-    conn.commit()
-    cur.close()
-    conn.close()
-    init_db()
-    return jsonify({"message": "Table reset successfully."})
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=False)
