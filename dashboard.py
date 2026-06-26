@@ -62,6 +62,22 @@ def download_report(app_name, scan_id):
         headers={"Content-Disposition": f"attachment; filename={app_name}-security-report.md"}
     )
 
+@app.route("/api/history/<app_name>", methods=["GET"])
+def get_history(app_name):
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("""
+        SELECT risk_level, report, scan_time 
+        FROM scans 
+        WHERE app_name = %s 
+        ORDER BY scan_time DESC 
+        LIMIT 10
+    """, (app_name,))
+    scans = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify([dict(s) for s in scans])
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=False)
