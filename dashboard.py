@@ -213,17 +213,14 @@ def download_report(app_name, scan_id):
             [
                 Paragraph("APPLICATION", S["label"]),
                 Paragraph(app_name, style("app", size=10, color=INK, bold=True)),
-                Paragraph("OVERALL RISK", S["label"]),
-                Paragraph(scan["risk_level"], S["badge"]),
             ],
             [
                 Paragraph("REPOSITORY", S["label"]),
                 Paragraph(scan["repo"], S["mono"]),
-                Paragraph("RISK LEVEL", S["label"]),
-                Paragraph(
-                    scan["risk_level"],
-                    style("rl", size=8, color=risk_colour, bold=True, align=TA_CENTER)
-                ),
+            ],
+            [
+                Paragraph("OVERALL RISK", S["label"]),
+                Paragraph(scan["risk_level"], S["badge"]),
             ],
         ],
         colWidths=[28*mm, W*0.42, 28*mm, W*0.25],
