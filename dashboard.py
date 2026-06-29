@@ -292,7 +292,7 @@ def download_report(app_name, scan_id):
         # Column widths — no word should be cut off
         # Vulnerability gets the most space; short cols (severity, likelihood) stay narrow
         if n == 5:
-            cw = [W*0.18, W*0.12, W*0.13, W*0.20, W*0.38]
+            cw = [W*0.18, W*0.12, W*0.14, W*0.20, W*0.37]
         elif n == 6:
             cw = [W*0.16, W*0.11, W*0.11, W*0.10, W*0.17, W*0.35]
         else:
