@@ -8,9 +8,17 @@ import io
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
-from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
-from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    HRFlowable,
+)
 
 app = Flask(__name__)
 
@@ -56,268 +64,555 @@ def download_report(app_name, scan_id):
     if not scan:
         return jsonify({"error": "Scan not found"}), 404
 
-    # ── colour palette (matches dashboard dark theme) ──
-    BLACK      = colors.HexColor("#0d0d0d")
-    CARD       = colors.HexColor("#171717")
-    CARD2      = colors.HexColor("#1f1f1f")
-    BORDER     = colors.HexColor("#2a2a2a")
-    WHITE      = colors.HexColor("#f0f0f0")
-    MUTED      = colors.HexColor("#737373")
-    ACCENT     = colors.HexColor("#e8841a")
-    CRITICAL   = colors.HexColor("#ef4444")
-    HIGH       = colors.HexColor("#f97316")
-    MEDIUM     = colors.HexColor("#eab308")
-    LOW        = colors.HexColor("#22c55e")
-    NONE_COL   = colors.HexColor("#6b7280")
+    # ── colour palette ──
+    PRIMARY = colors.HexColor("#2563EB")
+    PRIMARY_LIGHT = colors.HexColor("#EFF6FF")
 
-    risk_colors = {
-        "CRITICAL": CRITICAL,
-        "HIGH": HIGH,
-        "MEDIUM": MEDIUM,
-        "LOW": LOW,
-        "NONE": NONE_COL
+    TEXT = colors.HexColor("#111827")
+    MUTED = colors.HexColor("#6B7280")
+
+    BORDER = colors.HexColor("#E5E7EB")
+
+    BACKGROUND = colors.white
+    CARD = colors.HexColor("#F9FAFB")
+
+    RISK = {
+        "CRITICAL": colors.HexColor("#DC2626"),
+        "HIGH": colors.HexColor("#EA580C"),
+        "MEDIUM": colors.HexColor("#CA8A04"),
+        "LOW": colors.HexColor("#16A34A"),
+        "NONE": colors.HexColor("#64748B")
     }
 
-    risk_color = risk_colors.get(scan["risk_level"], MUTED)
+    risk_colour = RISK.get(scan["risk_level"], MUTED)
 
-    # ── styles ──
-    def mono(size=9, color=WHITE, bold=False):
-        return ParagraphStyle(
-            "mono",
-            fontName="Courier-Bold" if bold else "Courier",
-            fontSize=size,
-            textColor=color,
-            leading=size * 1.5
-        )
+    styles = getSampleStyleSheet()
 
-    def sans(size=10, color=WHITE, bold=False, align=TA_LEFT):
-        return ParagraphStyle(
-            "sans",
-            fontName="Helvetica-Bold" if bold else "Helvetica",
-            fontSize=size,
-            textColor=color,
-            leading=size * 1.5,
-            alignment=align
-        )
+    title_style = ParagraphStyle(
+        "title",
+        parent=styles["Heading1"],
+        fontName="Helvetica-Bold",
+        fontSize=24,
+        textColor=TEXT,
+        spaceAfter=4
+    )
+
+    heading_style = ParagraphStyle(
+        "heading",
+        parent=styles["Heading2"],
+        fontName="Helvetica-Bold",
+        fontSize=13,
+        textColor=PRIMARY,
+        spaceBefore=12,
+        spaceAfter=8
+    )
+
+    body_style = ParagraphStyle(
+        "body",
+        parent=styles["BodyText"],
+        fontName="Helvetica",
+        fontSize=9.5,
+        leading=15,
+        textColor=TEXT
+    )
+
+    small_style = ParagraphStyle(
+        "small",
+        parent=styles["BodyText"],
+        fontName="Helvetica",
+        fontSize=8,
+        leading=12,
+        textColor=MUTED
+    )
+
+    mono_style = ParagraphStyle(
+        "mono",
+        parent=styles["BodyText"],
+        fontName="Courier",
+        fontSize=8,
+        leading=12,
+        textColor=TEXT
+    )
+
+    badge_style = ParagraphStyle(
+        "badge",
+        parent=styles["BodyText"],
+        alignment=TA_CENTER,
+        fontName="Helvetica-Bold",
+        fontSize=11,
+        textColor=risk_colour
+    )
 
     # ── parse markdown table from report ──
     def parse_markdown_table(text):
-        lines = text.strip().split("\n")
-        table_lines = [l for l in lines if l.strip().startswith("|") and "---" not in l]
         rows = []
-        for line in table_lines:
-            cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if cells:
-                rows.append(cells)
+        for line in text.splitlines():
+            if not line.startswith("|"):
+                continue
+            if "---" in line:
+                continue
+            cols = [
+                c.strip()
+                for c in line.strip().strip("|").split("|")
+            ]
+            rows.append(cols)
         return rows
-
-    def get_summary(text):
-        lines = text.strip().split("\n")
-        summary_lines = []
-        in_summary = False
-        for line in lines:
-            if line.strip().startswith("|") or "---" in line:
-                in_summary = False
-            if not line.strip().startswith("|") and not line.strip().startswith("RESULT") and line.strip() and "---" not in line:
-                summary_lines.append(line.strip())
-        return " ".join(summary_lines[:6]) if summary_lines else ""
+    
+    def clean_summary(text):
+        lines = []
+        for line in text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith("|"):
+                continue
+            if "---" in line:
+                continue
+            if line.upper().startswith("RESULT"):
+                continue
+            lines.append(line)
+        return "<br/>".join(lines[:8])
+    
+    def add_section(story, title):
+        story.append(Spacer(1, 6))
+        story.append(Paragraph(title, heading_style))
+        story.append(HRFlowable(
+            width="100%",
+            thickness=0.5,
+            color=BORDER
+        ))
+        story.append(Spacer(1, 8))
 
     # ── build PDF in memory ──
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
-        leftMargin=20*mm,
-        rightMargin=20*mm,
-        topMargin=20*mm,
-        bottomMargin=20*mm
+        leftMargin=18*mm,
+        rightMargin=18*mm,
+        topMargin=18*mm,
+        bottomMargin=18*mm
     )
 
     story = []
-    W = A4[0] - 40*mm  # usable width
 
-    # ── header band ──
-    header_data = [[
-        Paragraph(f"SECDASH", mono(8, ACCENT, bold=True)),
-        Paragraph(f"SECURITY SCAN REPORT", mono(8, MUTED)),
-    ]]
-    header_table = Table(header_data, colWidths=[W*0.5, W*0.5])
-    header_table.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,-1), BLACK),
-        ("ALIGN", (1,0), (1,0), "RIGHT"),
-        ("TOPPADDING", (0,0), (-1,-1), 8),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 8),
-        ("LEFTPADDING", (0,0), (-1,-1), 10),
-        ("RIGHTPADDING", (0,0), (-1,-1), 10),
-        ("LINEBELOW", (0,0), (-1,-1), 1, ACCENT),
+    # ======================================================
+    # COVER HEADER
+    # ======================================================
+
+    story.append(
+        Paragraph(
+            "<font color='#2563EB'><b>SECDASH</b></font>",
+            small_style
+        )
+    )
+    story.append(Spacer(1, 4))
+    story.append(
+        Paragraph(
+            "Security Assessment Report",
+            title_style
+        )
+    )
+    story.append(
+        Paragraph(
+            "AI-assisted CI/CD Security Scan",
+            small_style
+        )
+    )
+    story.append(Spacer(1, 18))
+    # ======================================================
+    # RISK SUMMARY CARD
+    # ======================================================
+    risk_card = Table(
+        [
+            [
+                Paragraph("<b>Application</b>", small_style),
+                Paragraph(app_name, body_style)
+            ],
+            [
+                Paragraph("<b>Repository</b>", small_style),
+                Paragraph(scan["repo"], body_style)
+            ],
+            [
+                Paragraph("<b>Overall Risk</b>", small_style),
+                Paragraph(
+                    f"<font color='{risk_colour}'><b>{scan['risk_level']}</b></font>",
+                    badge_style
+                )
+            ]
+        ],
+        colWidths=[45*mm, 115*mm]
+    )
+
+    risk_card.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),CARD),
+        ("BOX",(0,0),(-1,-1),0.6,BORDER),
+        ("INNERGRID",(0,0),(-1,-1),0.3,BORDER),
+        ("TOPPADDING",(0,0),(-1,-1),10),
+        ("BOTTOMPADDING",(0,0),(-1,-1),10),
+        ("LEFTPADDING",(0,0),(-1,-1),12),
+        ("RIGHTPADDING",(0,0),(-1,-1),12)
     ]))
-    story.append(header_table)
-    story.append(Spacer(1, 8*mm))
-
-    # ── app name + risk badge ──
-    title_data = [[
-        Paragraph(app_name, sans(22, WHITE, bold=True)),
-        Paragraph(scan["risk_level"], sans(14, risk_color, bold=True, align=TA_CENTER)),
-    ]]
-    title_table = Table(title_data, colWidths=[W*0.7, W*0.3])
-    title_table.setStyle(TableStyle([
-        ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
-        ("ALIGN", (1,0), (1,0), "RIGHT"),
-        ("BACKGROUND", (1,0), (1,0), CARD2),
-        ("ROUNDEDCORNERS", (1,0), (1,0), [4,4,4,4]),
-        ("TOPPADDING", (0,0), (-1,-1), 6),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
-        ("LEFTPADDING", (1,0), (1,0), 10),
-        ("RIGHTPADDING", (1,0), (1,0), 10),
-    ]))
-    story.append(title_table)
-    story.append(Spacer(1, 4*mm))
-
-    # ── meta info row ──
-    meta_data = [[
-        Paragraph(f"Repo: {scan['repo']}", mono(8, MUTED)),
-        Paragraph(f"Push: {scan['push_time']}", mono(8, MUTED)),
-        Paragraph(f"Scan: {scan['scan_time']}", mono(8, MUTED)),
-    ]]
-    meta_table = Table(meta_data, colWidths=[W*0.4, W*0.3, W*0.3])
-    meta_table.setStyle(TableStyle([
-        ("TOPPADDING", (0,0), (-1,-1), 0),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 0),
-    ]))
-    story.append(meta_table)
-    story.append(Spacer(1, 6*mm))
-    story.append(HRFlowable(width=W, color=BORDER, thickness=1))
-    story.append(Spacer(1, 6*mm))
-
-    # ── files scanned ──
-    story.append(Paragraph("FILES SCANNED", mono(8, ACCENT, bold=True)))
-    story.append(Spacer(1, 2*mm))
-    story.append(Paragraph(scan["files_scanned"] or "N/A", mono(9, WHITE)))
-    story.append(Spacer(1, 6*mm))
-    story.append(HRFlowable(width=W, color=BORDER, thickness=1))
-    story.append(Spacer(1, 6*mm))
-
-    # ── vulnerability table ──
-    story.append(Paragraph("VULNERABILITY FINDINGS", mono(8, ACCENT, bold=True)))
-    story.append(Spacer(1, 3*mm))
-
-    table_rows = parse_markdown_table(scan["report"])
-
-    if table_rows:
-        headers = table_rows[0]
-        data_rows = table_rows[1:]
-
-        # header row
-        styled_headers = [Paragraph(h.upper(), mono(7, MUTED, bold=True)) for h in headers]
-
-        # data rows
-        styled_rows = []
-        for row in data_rows:
-            styled_row = []
-            for i, cell in enumerate(row):
-                # colour the severity/likelihood cells
-                cell_color = WHITE
-                if i == 1:  # severity column
-                    sev = cell.upper()
-                    cell_color = risk_colors.get(sev, WHITE)
-                elif i == 2:  # likelihood column
-                    lik = cell.upper()
-                    cell_color = risk_colors.get(lik, WHITE)
-                styled_row.append(Paragraph(cell, mono(7, cell_color)))
-            # pad if row is shorter than headers
-            while len(styled_row) < len(headers):
-                styled_row.append(Paragraph("", mono(7, WHITE)))
-            styled_rows.append(styled_row)
-
-        all_rows = [styled_headers] + styled_rows
-
-        # column widths — distribute based on number of columns
-        n_cols = len(headers)
-        if n_cols == 5:
-            col_widths = [W*0.18, W*0.10, W*0.10, W*0.25, W*0.37]
-        elif n_cols == 6:
-            col_widths = [W*0.15, W*0.09, W*0.09, W*0.09, W*0.22, W*0.36]
-        else:
-            col_widths = [W/n_cols] * n_cols
-
-        vuln_table = Table(all_rows, colWidths=col_widths, repeatRows=1)
-        vuln_table.setStyle(TableStyle([
-            # header
-            ("BACKGROUND", (0,0), (-1,0), CARD2),
-            ("LINEBELOW", (0,0), (-1,0), 1, BORDER),
-            # rows
-            ("BACKGROUND", (0,1), (-1,-1), CARD),
-            ("ROWBACKGROUNDS", (0,1), (-1,-1), [CARD, BLACK]),
-            ("LINEBELOW", (0,0), (-1,-1), 0.5, BORDER),
-            ("GRID", (0,0), (-1,-1), 0.5, BORDER),
-            # padding
-            ("TOPPADDING", (0,0), (-1,-1), 6),
-            ("BOTTOMPADDING", (0,0), (-1,-1), 6),
-            ("LEFTPADDING", (0,0), (-1,-1), 6),
-            ("RIGHTPADDING", (0,0), (-1,-1), 6),
-            ("VALIGN", (0,0), (-1,-1), "TOP"),
-        ]))
-        story.append(vuln_table)
-    else:
-        story.append(Paragraph("No structured vulnerability table found in report.", mono(9, MUTED)))
-
-    story.append(Spacer(1, 6*mm))
-    story.append(HRFlowable(width=W, color=BORDER, thickness=1))
-    story.append(Spacer(1, 6*mm))
-
-    # ── summary ──
-    story.append(Paragraph("SUMMARY", mono(8, ACCENT, bold=True)))
-    story.append(Spacer(1, 3*mm))
-    summary = get_summary(scan["report"])
+    story.append(risk_card)
+    story.append(Spacer(1,18))
+    # ======================================================
+    # EXECUTIVE SUMMARY
+    # ======================================================
+    add_section(story,"Executive Summary")
+    summary = clean_summary(scan["report"])
     if summary:
-        story.append(Paragraph(summary, sans(9, MUTED)))
-    story.append(Spacer(1, 6*mm))
+        story.append(
+            Paragraph(summary, body_style)
+        )
+    else:
+        story.append(
+            Paragraph(
+                "No executive summary was available for this scan.",
+                body_style
+            )
+        )
+    story.append(Spacer(1,16))
+    # ======================================================
+    # SCAN INFORMATION
+    # ======================================================
+    add_section(story,"Scan Information")
+    info_table = Table(
+        [
+            [
+                Paragraph("<b>Push Time</b>",small_style),
+                Paragraph(scan["push_time"],mono_style),
+                Paragraph("<b>Scan Time</b>",small_style),
+                Paragraph(scan["scan_time"],mono_style)
+            ],
+            [
+                Paragraph("<b>Files Scanned</b>",small_style),
+                Paragraph(str(scan["files_scanned"]),mono_style),
+                Paragraph("<b>Repository</b>",small_style),
+                Paragraph(scan["repo"],mono_style)
 
-    # ── overall result ──
-    result_data = [[
-        Paragraph("OVERALL RISK RATING", mono(8, MUTED, bold=True)),
-        Paragraph(scan["risk_level"], sans(14, risk_color, bold=True, align=TA_CENTER)),
-    ]]
-    result_table = Table(result_data, colWidths=[W*0.7, W*0.3])
-    result_table.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,-1), CARD),
-        ("LINEABOVE", (0,0), (-1,-1), 2, risk_color),
-        ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
-        ("ALIGN", (1,0), (1,0), "CENTER"),
-        ("TOPPADDING", (0,0), (-1,-1), 10),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 10),
-        ("LEFTPADDING", (0,0), (-1,-1), 10),
-        ("RIGHTPADDING", (0,0), (-1,-1), 10),
+            ]
+        ],
+        colWidths=[28*mm,57*mm,28*mm,57*mm]
+    )
+
+    info_table.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),colors.white),
+        ("GRID",(0,0),(-1,-1),0.35,BORDER),
+        ("BOX",(0,0),(-1,-1),0.5,BORDER),
+        ("TOPPADDING",(0,0),(-1,-1),8),
+        ("BOTTOMPADDING",(0,0),(-1,-1),8),
+        ("LEFTPADDING",(0,0),(-1,-1),8),
+        ("RIGHTPADDING",(0,0),(-1,-1),8),
     ]))
-    story.append(result_table)
-    story.append(Spacer(1, 8*mm))
 
-    # ── footer ──
-    story.append(HRFlowable(width=W, color=BORDER, thickness=1))
-    story.append(Spacer(1, 3*mm))
-    footer_data = [[
-        Paragraph("SecDash — AI-powered CI/CD security scanner", mono(7, MUTED)),
-        Paragraph("LangGraph · Groq · Flask", mono(7, MUTED)),
-    ]]
-    footer_table = Table(footer_data, colWidths=[W*0.6, W*0.4])
-    footer_table.setStyle(TableStyle([
-        ("ALIGN", (1,0), (1,0), "RIGHT"),
-        ("TOPPADDING", (0,0), (-1,-1), 0),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 0),
+    story.append(info_table)
+    story.append(Spacer(1,18))
+    # ======================================================
+    # FILES SCANNED
+    # ======================================================
+    add_section(story,"Files Scanned")
+    files = scan["files_scanned"] or "No file list available."
+    if "," in files:
+        file_list = "<br/>".join(
+            f"• {f.strip()}"
+            for f in files.split(",")
+        )
+    else:
+        file_list = files.replace("\n","<br/>")
+    story.append(
+        Paragraph(
+            file_list,
+            mono_style
+        )
+    )
+    story.append(Spacer(1,18))
+
+    # ======================================================
+    # VULNERABILITY FINDINGS
+    # ======================================================
+
+    add_section(story, "Vulnerability Findings")
+    rows = parse_markdown_table(scan["report"])
+    if rows:
+        headers = rows[0]
+        data_rows = rows[1:]
+        table_data = []
+        # ---------------- HEADER ----------------
+        header_row = []
+        for h in headers:
+            header_row.append(
+                Paragraph(
+                    f"<b>{h.upper()}</b>",
+                    ParagraphStyle(
+                        "header",
+                        parent=small_style,
+                        textColor=colors.white,
+                        alignment=TA_CENTER,
+                        fontName="Helvetica-Bold"
+                    )
+                )
+            )
+        table_data.append(header_row)
+
+        # ---------------- BODY ----------------
+
+        for row in data_rows:
+            while len(row) < len(headers):
+                row.append("")
+            styled = []
+            for i, cell in enumerate(row):
+                colour = TEXT
+                value = cell.upper()
+                if value == "CRITICAL":
+                    colour = RISK["CRITICAL"]
+                elif value == "HIGH":
+                    colour = RISK["HIGH"]
+                elif value == "MEDIUM":
+                    colour = RISK["MEDIUM"]
+                elif value == "LOW":
+                    colour = RISK["LOW"]
+                elif value == "NONE":
+                    colour = RISK["NONE"]
+                styled.append(
+                    Paragraph(
+                        f"<font color='{colour}'>{cell}</font>",
+                        ParagraphStyle(
+                            "cell",
+                            parent=body_style,
+                            alignment=TA_LEFT
+                        )
+                    )
+                )
+            table_data.append(styled)
+
+        # -------------------------------------------------
+        # COLUMN WIDTHS
+        # -------------------------------------------------
+
+        width = doc.width
+        if len(headers) == 5:
+            col_widths = [
+                width * 0.16,
+                width * 0.12,
+                width * 0.12,
+                width * 0.24,
+                width * 0.36
+            ]
+        elif len(headers) == 6:
+            col_widths = [
+                width * 0.15,
+                width * 0.10,
+                width * 0.10,
+                width * 0.12,
+                width * 0.18,
+                width * 0.35
+            ]
+        else:
+            col_widths = [width / len(headers)] * len(headers)
+        findings_table = Table(
+            table_data,
+            colWidths=col_widths,
+            repeatRows=1
+        )
+        findings_table.setStyle(TableStyle([
+            # Header
+            ("BACKGROUND",(0,0),(-1,0),PRIMARY),
+            ("TEXTCOLOR",(0,0),(-1,0),colors.white),
+            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
+            ("ALIGN",(0,0),(-1,0),"CENTER"),
+            ("BOTTOMPADDING",(0,0),(-1,0),10),
+            ("TOPPADDING",(0,0),(-1,0),10),
+            # Body
+            ("ROWBACKGROUNDS",
+             (0,1),
+             (-1,-1),
+             [colors.white, CARD]),
+            ("GRID",
+             (0,0),
+             (-1,-1),
+             0.35,
+             BORDER),
+            ("BOX",
+             (0,0),
+             (-1,-1),
+             0.6,
+             BORDER),
+            ("LEFTPADDING",
+             (0,0),
+             (-1,-1),
+             8),
+            ("RIGHTPADDING",
+             (0,0),
+             (-1,-1),
+             8),
+            ("TOPPADDING",
+             (0,1),
+             (-1,-1),
+             9),
+            ("BOTTOMPADDING",
+             (0,1),
+             (-1,-1),
+             9),
+            ("VALIGN",
+             (0,0),
+             (-1,-1),
+             "TOP")
+        ]))
+        story.append(findings_table)
+    else:
+        story.append(
+            Table(
+                [[
+                    Paragraph(
+                        "No structured vulnerability table was detected in this report.",
+                        body_style
+                    )
+                ]],
+                colWidths=[doc.width]
+            )
+        )
+    story.append(Spacer(1,18))
+
+    # ======================================================
+    # AI ANALYSIS
+    # ======================================================
+
+    add_section(story, "AI Analysis")
+    summary = clean_summary(scan["report"])
+    if summary:
+        analysis_box = Table(
+            [[Paragraph(summary, body_style)]],
+            colWidths=[doc.width]
+        )
+        analysis_box.setStyle(TableStyle([
+            ("BACKGROUND",(0,0),(-1,-1),CARD),
+            ("BOX",(0,0),(-1,-1),0.5,BORDER),
+            ("LEFTPADDING",(0,0),(-1,-1),12),
+            ("RIGHTPADDING",(0,0),(-1,-1),12),
+            ("TOPPADDING",(0,0),(-1,-1),12),
+            ("BOTTOMPADDING",(0,0),(-1,-1),12)
+        ]))
+        story.append(analysis_box)
+    else:
+        story.append(
+            Paragraph(
+                "No AI-generated analysis was available.",
+                body_style
+            )
+        )
+    story.append(Spacer(1,20))
+
+    # ======================================================
+    # OVERALL RISK
+    # ======================================================
+
+    add_section(story, "Overall Assessment")
+    risk_card = Table(
+        [
+            [
+                Paragraph(
+                    "<b>Overall Risk Rating</b>",
+                    body_style
+                ),
+                Paragraph(
+                    f"<font color='{risk_colour}'><b>{scan['risk_level']}</b></font>",
+                    ParagraphStyle(
+                        "risk",
+                        parent=body_style,
+                        alignment=TA_CENTER,
+                        fontName="Helvetica-Bold",
+                        fontSize=16
+                    )
+                )
+            ]
+        ],
+        colWidths=[doc.width * 0.70, doc.width * 0.30]
+    )
+    risk_card.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),PRIMARY_LIGHT),
+        ("BOX",(0,0),(-1,-1),1,PRIMARY),
+        ("LINEBEFORE",(1,0),(1,0),1,PRIMARY),
+        ("LEFTPADDING",(0,0),(-1,-1),12),
+        ("RIGHTPADDING",(0,0),(-1,-1),12),
+        ("TOPPADDING",(0,0),(-1,-1),12),
+        ("BOTTOMPADDING",(0,0),(-1,-1),12),
+        ("VALIGN",(0,0),(-1,-1),"MIDDLE")
     ]))
-    story.append(footer_table)
+    story.append(risk_card)
+    story.append(Spacer(1,30))
 
-    # ── build and return ──
-    doc.build(story)
+    # ======================================================
+    # FOOTER
+    # ======================================================
+
+    story.append(
+        HRFlowable(
+            width="100%",
+            thickness=0.5,
+            color=BORDER
+        )
+    )
+    story.append(Spacer(1,8))
+    footer = Table(
+        [
+            [
+                Paragraph(
+                    "<b>SecDash</b><br/>AI-powered CI/CD Security Scanner",
+                    small_style
+                ),
+                Paragraph(
+                    "Generated using LangGraph • Groq • Flask",
+                    ParagraphStyle(
+                        "footer_right",
+                        parent=small_style,
+                        alignment=TA_RIGHT
+                    )
+                )
+            ]
+        ],
+        colWidths=[doc.width * 0.60, doc.width * 0.40]
+    )
+    footer.setStyle(TableStyle([
+        ("VALIGN",(0,0),(-1,-1),"TOP")
+    ]))
+    story.append(footer)
+
+    # ======================================================
+    # PAGE NUMBERS
+    # ======================================================
+
+    def add_page_number(canvas, doc):
+        canvas.saveState()
+        canvas.setFont("Helvetica",8)
+        canvas.setFillColor(MUTED)
+        canvas.drawRightString(
+            A4[0]-18*mm,
+            10*mm,
+            f"Page {doc.page}"
+        )
+        canvas.restoreState()
+
+    # ======================================================
+    # BUILD PDF
+    # ======================================================
+
+    doc.build(
+        story,
+        onFirstPage=add_page_number,
+        onLaterPages=add_page_number
+    )
+
     buffer.seek(0)
 
     return Response(
         buffer.getvalue(),
         mimetype="application/pdf",
         headers={
-            "Content-Disposition": f"attachment; filename={app_name}-security-report.pdf"
+            "Content-Disposition":
+            f"attachment; filename={app_name}-security-report.pdf"
         }
     )
+
 @app.route("/api/history/<app_name>", methods=["GET"])
 def get_history(app_name):
     conn = get_db()
