@@ -337,8 +337,6 @@ def download_report(app_name, scan_id):
             ("LEFTPADDING",   (0,0), (-1,-1), 8),
             ("RIGHTPADDING",  (0,0), (-1,-1), 8),
             ("VALIGN",        (0,0), (-1,-1), "TOP"),
-            # left border accent on first col
-            ("LINEBEFORE",    (0,0), (0,-1),  2, ACCENT),
         ]))
         story.append(findings)
 
