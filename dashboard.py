@@ -157,7 +157,7 @@ def download_report(app_name, scan_id):
     # ── app name + risk badge ──
     title_data = [[
         Paragraph(app_name, sans(22, WHITE, bold=True)),
-        Paragraph(f'<font color="#{scan["risk_level"] and risk_color.hexval()[1:] or "737373"}">{scan["risk_level"]}</font>', sans(14, risk_color, bold=True, align=TA_CENTER)),
+        Paragraph(scan["risk_level"], sans(14, risk_color, bold=True, align=TA_CENTER)),
     ]]
     title_table = Table(title_data, colWidths=[W*0.7, W*0.3])
     title_table.setStyle(TableStyle([
