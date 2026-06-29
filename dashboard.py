@@ -209,22 +209,13 @@ def download_report(app_name, scan_id):
 
     # ── Risk summary card ──
     risk_card = Table(
-        [
-            [
-                Paragraph("APPLICATION", S["label"]),
-                Paragraph(app_name, style("app", size=10, color=INK, bold=True)),
-            ],
-            [
-                Paragraph("REPOSITORY", S["label"]),
-                Paragraph(scan["repo"], S["mono"]),
-            ],
-            [
-                Paragraph("OVERALL RISK", S["label"]),
-                Paragraph(scan["risk_level"], S["badge"]),
-            ],
-        ],
-        colWidths=[28*mm, W*0.42, 28*mm, W*0.25],
-    )
+    [[
+        Paragraph("<b>Application</b><br/>" + app_name, S["body"]),
+        Paragraph("<b>Repository</b><br/>" + scan["repo"], S["body"]),
+        Paragraph("<b>Overall Risk</b><br/>" + scan["risk_level"], S["badge"]),
+    ]],
+    colWidths=[W*0.34, W*0.46, W*0.20],
+)
     risk_card.setStyle(TableStyle([
         ("BACKGROUND",      (0,0), (-1,-1), SURFACE),
         ("BACKGROUND",      (2,0), (3,0),   risk_bg),
