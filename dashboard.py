@@ -123,8 +123,8 @@ def download_report(app_name, scan_id):
         "h2":       style("h2",      size=11,  color=ACCENT,    bold=True, space_before=4, space_after=2),
         "title":    style("title",   size=22,  color=INK,       bold=True, leading=26),
         "subtitle": style("subtitle",size=9,   color=MUTED),
-        "th":       style("th",      size=8,   color=WHITE,     bold=True, align=TA_LEFT),
-        "td":       style("td",      size=8.5, color=INK_SOFT,  leading=13),
+        "th":       style("th",      size=7.5,   color=WHITE,     bold=True, align=TA_LEFT),
+        "td":       style("td",      size=8, color=INK_SOFT,  leading=13),
         "td_risk":  style("td_risk", size=8.5, color=INK,       bold=True),
         "footer":   style("footer",  size=7.5, color=MUTED),
         "footer_r": style("footer_r",size=7.5, color=MUTED,     align=TA_RIGHT),
@@ -302,7 +302,7 @@ def download_report(app_name, scan_id):
                 if i in (1, 2) and upper in RISK:
                     p = Paragraph(
                         f"<b>{cell}</b>",
-                        style(f"td_c{i}", size=8.5, color=RISK[upper], bold=True)
+                        style(f"td_c{i}", size=8.5, color=RISK[upper])
                     )
                 else:
                     p = Paragraph(cell, S["td"])
