@@ -404,11 +404,10 @@ def get_history(app_name):
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
-        SELECT risk_level, report, scan_time 
+        SELECT * 
         FROM scans 
         WHERE app_name = %s 
         ORDER BY scan_time DESC 
-        LIMIT 10
     """, (app_name,))
     scans = cur.fetchall()
     cur.close()
